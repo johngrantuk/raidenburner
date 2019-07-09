@@ -43,6 +43,7 @@ import customRPCHint from './customRPCHint.png';
 import namehash from 'eth-ens-namehash'
 import incogDetect from './services/incogDetect.js'
 import { mainAsset as xdai } from './core';
+import Raiden from './components/Raiden';
 
 //https://github.com/lesnitsky/react-native-webview-messaging/blob/v1/examples/react-native/web/index.js
 import RNMessageChannel from 'react-native-webview-messaging';
@@ -1945,6 +1946,39 @@ render() {
                   <NavCard title={"Claiming..."} goBack={this.goBack.bind(this)} darkMode={true}/>
                 </div>
               <Loader loaderImage={LOADERIMAGE} mainStyle={mainStyle}/>
+              </div>
+            );
+            case 'raiden':
+            return (
+              <div>
+                <div className="main-card card w-100" style={{zIndex:1}}>
+
+                  <NavCard title='Raiden' goBack={this.goBack.bind(this)}/>
+                  {defaultBalanceDisplay}
+                  <Raiden
+                    dollarDisplay={dollarDisplay}
+                    view={this.state.view}
+                    block={this.state.block}
+                    ensLookup={this.ensLookup.bind(this)}
+                    ERC20TOKEN={ERC20TOKEN}
+                    buttonStyle={buttonStyle}
+                    balance={balance}
+                    web3={this.state.web3}
+                    address={account}
+                    send={send}
+                    goBack={this.goBack.bind(this)}
+                    changeView={this.changeView}
+                    changeAlert={this.changeAlert}
+                    dollarDisplay={dollarDisplay}
+                    transactionsByAddress={this.state.transactionsByAddress}
+                    fullTransactionsByAddress={this.state.fullTransactionsByAddress}
+                    fullRecentTxs={this.state.fullRecentTxs}
+                    recentTxs={this.state.recentTxs}
+                  />
+                </div>
+                <Bottom
+                  action={this.goBack.bind(this)}
+                />
               </div>
             );
             default:
