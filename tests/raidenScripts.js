@@ -29,7 +29,7 @@ async function OpenChannel(tokenAddress, counterPartyAddr, deposit){
     data: {
       partner_address: counterPartyAddr,
       reveal_timeout: 10,
-      settle_timeout: 21,                      // Normally 500 but set lower for testing
+      settle_timeout: 500,                      // settle_timeout must be in range [500, 555428]
       token_address: tokenAddress,
       total_deposit: deposit
     }

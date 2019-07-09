@@ -54,11 +54,26 @@ export default class Raiden extends React.Component {
     let chs = [];
 
     for(var i = 0;i < response.data.length;i++){
-      //console.log(response.data[i].channel_identifier);
-      //chs.push(response.data[i].channel_identifier)
+      /*
+      balance: 0
+      channel_identifier: 10
+      partner_address: "0xA0FE2192d084849939e18eE0685696FcD07837CB"
+      reveal_timeout: 50
+      settle_timeout: 500
+      state: "closed"
+      token_address: "0x450Ad7606971bA248Ac03270736438026EEe7813"
+      token_network_identifier: "0x9DFE14Bd2328dd394Dd35723B46e7d0B6DCd8530"
+      total_deposit: 0
+      */
       chs.push({
         id: response.data[i].channel_identifier,
-        state: response.data[i].state
+        balance: response.data[i].balance,
+        partner_address: response.data[i].partner_address,
+        reveal_timeout: response.data[i],
+        settle_timeout: response.data[i],
+        state: response.data[i].state,
+        token_address: response.data[i].token_address,
+        total_deposit: response.data[i].total_deposit
       })
 
     }
@@ -66,6 +81,14 @@ export default class Raiden extends React.Component {
     //if(response.status != 200);
     this.setState({channels: chs})
     return response.data;
+  }
+
+  checkRaiden = async () => {
+    console.log('Checking Raiden Setup')
+  }
+
+  openChannel = async () => {
+    console.log('Openning Channel')
   }
 
   render() {
@@ -94,7 +117,7 @@ export default class Raiden extends React.Component {
 
       return (
         <li>
-          <h1>{channel.state}</h1>
+          ID: {channel.id} Partner: {channel.partner_address} Deposit: {channel.total_deposit}
           <button>
             Send
           </button>
@@ -160,13 +183,24 @@ export default class Raiden extends React.Component {
           </div>
         </div>
 
+        <button name="confirm" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary}
+                onClick={this.checkRaiden}>
+          Check Raiden
+        </button>
+
+        <div style={{width:"100%",textAlign:'center',padding:20}}>
+          <h2>
+            Available Channels
+          </h2>
+        </div>
+
         <div className="content row">
-          <ol>{channelsList}</ol>
+          <ul>{channelsList}</ul>
         </div>
 
         <div style={{width:"100%",textAlign:'center',padding:20}}>
           <h2>
-            Open Channel
+            Open A Channel
           </h2>
         </div>
 
@@ -193,6 +227,11 @@ export default class Raiden extends React.Component {
             </div>
           </div>
         </div>
+
+        <button name="open" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary}
+                onClick={this.openChannel}>
+          Open Channel
+        </button>
 
         <div name="theVeryBottom" className="text-center bottom-text">
           <span style={{padding:10}}>
