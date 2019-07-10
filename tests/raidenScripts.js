@@ -1,3 +1,6 @@
+/*
+These are a bunch of functions I found useful while I was initially testing and developing.
+*/
 const axios = require('axios');
 const web3 = require('web3');
 
@@ -148,7 +151,7 @@ async function SettleChannel(tokenAddress, counterPartyAddr){
     method: 'patch',
     url: 'http://localhost:5001/api/v1/channels/' + tokenAddress + '/' + counterPartyAddr,
     data: {
-      state: 'closed'
+      state: 'settled'
     }
   });
 
@@ -173,20 +176,7 @@ async function OpenConnection(tokenAddress, counterPartyAddr, deposit){
   //if(response.status != 200)
 }
 
-/*
-
-
-response = axios({
-  method: 'delete',
-  url: 'http://localhost:5001/api/v1/connections/' + tokenAddress,
-
-}).then((response) => {
-  console.log('Should have left network')
-  console.log(response)
-})
-*/
-
-async function Main() {
+async function OpenChannelTest() {
 
   let tokenAddress = '0x450Ad7606971bA248Ac03270736438026EEe7813';
   let isExist = await CheckForToken(tokenAddress);
@@ -200,7 +190,7 @@ async function Main() {
   // Send value
 }
 
-async function Payment(){
+async function PaymentTest(){
 
   let tokenAddress = '0x450Ad7606971bA248Ac03270736438026EEe7813';
   let addr1 = '0xa1A39f20a905A5FB4EdDF42581A7bE133803b15A';
@@ -208,7 +198,7 @@ async function Payment(){
   await Pay(tokenAddress, addr1, web3.utils.toWei('1', 'ether'))
 }
 
-async function Close(){
+async function CloseTest(){
 
   let tokenAddress = '0x450Ad7606971bA248Ac03270736438026EEe7813';
   let addr1 = '0xa1A39f20a905A5FB4EdDF42581A7bE133803b15A';
@@ -216,10 +206,15 @@ async function Close(){
   await CloseChannel(tokenAddress, addr1)
 }
 
-Main();
-// Payment();
-//Close();
+async function SettleTest(){
 
-// GET /api/(version)/channels
-// GET /api/(version)/channels/(token_address)
-//GET /api/(version)/channels/(token_address)/(partner_address)
+  let tokenAddress = '0x450Ad7606971bA248Ac03270736438026EEe7813';
+  let addr1 = '0xa1A39f20a905A5FB4EdDF42581A7bE133803b15A';
+
+  await SettleChannel(tokenAddress, addr1)
+}
+
+// OpenChannelTest();
+// PaymentTest();
+//CloseTest();
+SettleTest();

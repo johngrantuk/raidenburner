@@ -53,26 +53,17 @@ export default class Raiden extends React.Component {
         method: 'get',
         url: this.state.nodeDetails + '/api/v1/channels'
       });
-
+      /*
       console.log(response.status);
       console.log(typeof(response.data));
       console.log('Channels:');
       console.log(response.data);
+      */
 
       let chs = [];
 
       for(var i = 0;i < response.data.length;i++){
-        /*
-        balance: 0
-        channel_identifier: 10
-        partner_address: "0xA0FE2192d084849939e18eE0685696FcD07837CB"
-        reveal_timeout: 50
-        settle_timeout: 500
-        state: "closed"
-        token_address: "0x450Ad7606971bA248Ac03270736438026EEe7813"
-        token_network_identifier: "0x9DFE14Bd2328dd394Dd35723B46e7d0B6DCd8530"
-        total_deposit: 0
-        */
+
         let state = <h5>Channel Is In A Funny State {response.data[i].state} ID: {response.data[i].channel_identifier}</h5>;
 
         let payBtn = '';
@@ -97,7 +88,7 @@ export default class Raiden extends React.Component {
           </div>
 
           closeBtn =
-          <button name="close" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={this.closeChannel}>
+          <button name="close" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={() => this.closeChannel(id)}>
             Close Channel
           </button>
 
@@ -164,13 +155,75 @@ export default class Raiden extends React.Component {
   }
 
   openChannel = async () => {
-    console.log('Openning Channel');
-    this.props.changeAlert({type: 'success', message: "You're alerting!"});
+    try{
+      const deposit = this.state.depositAmount;
+      const tokenAddress = this.state.tokenAddress;
+      const counterPartyAddr = this.state.receiverAddress;
+      console.log('Opening Channel:');
+      console.log('Token: ' + tokenAddress);
+      console.log('To Address: ' + counterPartyAddr);
+      console.log('Deposit (WEI): ' + deposit);
+      // This can be done even if the other node holds tokens or not.
+      let response = await axios({
+        method: 'put',
+        url: this.state.nodeDetails + '/api/v1/channels',
+        data: {
+          partner_address: counterPartyAddr,
+          reveal_timeout: 10,
+          settle_timeout: 500,                      // settle_timeout must be in range [500, 555428]
+          token_address: tokenAddress,
+          total_deposit: deposit
+        }
+      });
+
+      console.log('Status: ');
+      console.log(response.status);
+      console.log('Data: ');
+      console.log(response.data);
+
+      if(response.status == 200){
+        this.props.changeAlert({type: 'success', message: "Channel Open"});
+      }else {
+        this.props.changeAlert({type: 'warning', message: "Issue Sending. Code: " + response.status});        // This would be improved
+      }
+
+      this.GetChannels(this.state.tokenAddress);
+    }catch(err){
+      this.props.changeAlert({type: 'danger', message: err.toString()});
+    }
   }
 
-  closeChannel = async () => {
-    console.log('Closing Channel');
-    // need to identify which channel
+  closeChannel = async (ID) => {
+
+    const tokenAddress = this.state.tokenAddress;
+    const partnerId = "partner_" + ID;
+    const counterPartyAddr = document.getElementById(partnerId).value;
+
+    console.log('Closing Channel:');
+    console.log('Token: ' + tokenAddress);
+    console.log('With Address: ' + counterPartyAddr);
+    try{
+      let response = await axios({
+        method: 'patch',
+        url: this.state.nodeDetails + '/api/v1/channels/' + tokenAddress + '/' + counterPartyAddr,
+        data: {
+          state: 'closed'
+        }
+      });
+
+      console.log('Status: ');
+      console.log(response.status);
+      console.log('Data: ');
+      console.log(response.data);
+
+      if(response.status == 200){
+        this.props.changeAlert({type: 'success', message: "Channel Closed. Wait For Settle."});
+      }else {
+        this.props.changeAlert({type: 'warning', message: "Issue Sending. Code: " + response.status});        // This would be improved
+      }
+    }catch(err){
+      this.props.changeAlert({type: 'danger', message: err.toString()});
+    }
   }
 
   payChannel = async (ID) => {
@@ -185,26 +238,30 @@ export default class Raiden extends React.Component {
     console.log('To Address: ' + counterPartyAddr);
     console.log('Amount (WEI): ' + amount);
 
-    let response = await axios({
-      method: 'post',
-      url: this.state.nodeDetails + '/api/v1/payments/' + tokenAddress + '/' + counterPartyAddr,
-      data: {
-        amount: amount
+    try{
+      let response = await axios({
+        method: 'post',
+        url: this.state.nodeDetails + '/api/v1/payments/' + tokenAddress + '/' + counterPartyAddr,
+        data: {
+          amount: amount
+        }
+      });
+
+      console.log('Status: ');
+      console.log(response.status);
+      console.log('Data: ');
+      console.log(response.data);
+      if(response.status == 200){
+        this.props.changeAlert({type: 'success', message: "Payment Complete 💸"});
+      }else {
+        this.props.changeAlert({type: 'warning', message: "Issue Sending. Code: " + response.status});        // This would be improved
       }
-    });
 
-    console.log('Status: ');
-    console.log(response.status);
-    console.log('Data: ');
-    console.log(response.data);
-    if(response.status == 200){
-      this.props.changeAlert({type: 'success', message: "Payment Complete 💸"});
-    }else {
-      this.props.changeAlert({type: 'warning', message: "Issue Sending. Code: " + response.status});        // This would be improved
+      // Reload balance, etc
+      this.GetChannels(this.state.tokenAddress);
+    }catch(err){
+      this.props.changeAlert({type: 'danger', message: err.toString()});
     }
-
-    // Reload balance, etc
-    this.GetChannels(this.state.tokenAddress);
   }
 
   render() {
