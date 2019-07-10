@@ -1,6 +1,7 @@
 ### Raiden Burner - Beyond blockchain virtual hackathon entry
 
-[![Demo Video](http://img.youtube.com/vi/Pn0gsljGalo/0.jpg)](http://www.youtube.com/watch?v=Pn0gsljGalo "Demo")
+
+[Demo Video](http://www.youtube.com/watch?v=Pn0gsljGalo)
 
 The aim of my entry was to add an easy to use Raiden payment option to the [Burner Wallet](https://github.com/austintgriffith/burner-wallet), a really user friendly web wallet. Raiden aims to make payments for dApps easy by enabling fast and cheap off-chain transfers so I can imagine loads of times it could be useful in a Burner project.
 The Burner Wallet Collective was formed with the aim of making the Burner Wallet cleaner and more extensible and I thought it would be really cool if there was an easy way to drop in a component that extends the Burner and allows a user to get up and running with Raiden easily.
