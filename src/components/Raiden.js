@@ -11,6 +11,8 @@ const web3 = require('web3');
 
 const QRCode = require('qrcode.react');
 
+let intervalLong;
+
 export default class Raiden extends React.Component {
 
   constructor(props) {
@@ -26,8 +28,11 @@ export default class Raiden extends React.Component {
   }
   componentDidMount(){
     console.log('Mounted');
-    this.longPoll();
-    this.GetChannels(this.state.tokenAddress);
+    // this.GetChannels(this.state.tokenAddress);
+    intervalLong = setInterval(this.GetChannels.bind(this), 1000, this.state.tokenAddress);
+  }
+  componentWillUnmount() {
+    clearInterval(intervalLong);
   }
   longPoll() {
     axios.get("https://api.coinmarketcap.com/v2/ticker/1027/")
@@ -43,82 +48,88 @@ export default class Raiden extends React.Component {
       })
   }
   async GetChannels(tokenAddress){
-    let response = await axios({
-      method: 'get',
-      url: this.state.nodeDetails + '/api/v1/channels'
-    });
+    try{
+      let response = await axios({
+        method: 'get',
+        url: this.state.nodeDetails + '/api/v1/channels'
+      });
 
-    console.log(response.status);
-    console.log(typeof(response.data));
-    console.log('Channels:');
-    console.log(response.data);
+      console.log(response.status);
+      console.log(typeof(response.data));
+      console.log('Channels:');
+      console.log(response.data);
 
-    let chs = [];
+      let chs = [];
 
-    for(var i = 0;i < response.data.length;i++){
-      /*
-      balance: 0
-      channel_identifier: 10
-      partner_address: "0xA0FE2192d084849939e18eE0685696FcD07837CB"
-      reveal_timeout: 50
-      settle_timeout: 500
-      state: "closed"
-      token_address: "0x450Ad7606971bA248Ac03270736438026EEe7813"
-      token_network_identifier: "0x9DFE14Bd2328dd394Dd35723B46e7d0B6DCd8530"
-      total_deposit: 0
-      */
-      let state = <h5>Channel Is In A Funny State {response.data[i].state} ID: {response.data[i].channel_identifier}</h5>;
+      for(var i = 0;i < response.data.length;i++){
+        /*
+        balance: 0
+        channel_identifier: 10
+        partner_address: "0xA0FE2192d084849939e18eE0685696FcD07837CB"
+        reveal_timeout: 50
+        settle_timeout: 500
+        state: "closed"
+        token_address: "0x450Ad7606971bA248Ac03270736438026EEe7813"
+        token_network_identifier: "0x9DFE14Bd2328dd394Dd35723B46e7d0B6DCd8530"
+        total_deposit: 0
+        */
+        let state = <h5>Channel Is In A Funny State {response.data[i].state} ID: {response.data[i].channel_identifier}</h5>;
 
-      let payBtn = '';
-      let closeBtn = '';
-      const id = response.data[i].channel_identifier;
-      const amountId = "payamount_" + id;
-      const partnerId = "partner_" + id;
+        let payBtn = '';
+        let closeBtn = '';
+        const id = response.data[i].channel_identifier;
+        const amountId = "payamount_" + id;
+        const partnerId = "partner_" + id;
 
-      if(response.data[i].state == 'closed'){
-        state = <h5>Channel Is Closed ID: {response.data[i].channel_identifier}</h5>;
-      }else if(response.data[i].state == 'opened'){
+        if(response.data[i].state == 'closed'){
+          state = <h5>Channel Is Closed ID: {response.data[i].channel_identifier}</h5>;
+        }else if(response.data[i].state == 'opened'){
 
-        state = <h5>Channel Is Open ID: {response.data[i].channel_identifier}</h5>;
+          state = <h5>Channel Is Open ID: {response.data[i].channel_identifier}</h5>;
 
-        payBtn =
-        <div>
-        <label htmlFor="amount_input">Payment Amount</label>
-        <input type="text" className="form-control" id={amountId} placeholder="10000000000000000000"/>
-        <button name="pay" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={() => this.payChannel(id)}>
-          Pay Partner
-        </button>
-        </div>
-
-        closeBtn =
-        <button name="close" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={this.closeChannel}>
-          Close Channel
-        </button>
-
-      }else if(response.data[i].state == 'settled'){
-        state = <h5>Channel Is Settled ID: {response.data[i].channel_identifier}</h5>;
-      }
-
-      chs.push(
-        <div className="content row">
-          <div className="form-group w-100">
-              {state}
-              <label htmlFor="amount_input">Partner Address</label>
-              <input type="text" className="form-control" id={partnerId} value={response.data[i].partner_address} disabled/>
-              <label htmlFor="amount_input">Balance</label>
-              <input type="text" className="form-control" value={response.data[i].balance} disabled/>
-              <label htmlFor="amount_input">Deposit</label>
-              <input type="text" className="form-control" value={response.data[i].total_deposit} disabled/>
-              {closeBtn}
-              {payBtn}
+          payBtn =
+          <div>
+          <label htmlFor="amount_input">Payment Amount</label>
+          <input type="text" className="form-control" id={amountId} placeholder="10000000000000000000"/>
+          <button name="pay" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={() => this.payChannel(id)}>
+            Pay Partner
+          </button>
           </div>
-        </div>
-      )
 
+          closeBtn =
+          <button name="close" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={this.closeChannel}>
+            Close Channel
+          </button>
+
+        }else if(response.data[i].state == 'settled'){
+          state = <h5>Channel Is Settled ID: {response.data[i].channel_identifier}</h5>;
+        }
+
+        chs.push(
+          <div className="content row">
+            <div className="form-group w-100">
+                {state}
+                <label htmlFor="amount_input">Partner Address</label>
+                <input type="text" className="form-control" id={partnerId} value={response.data[i].partner_address} disabled/>
+                <label htmlFor="amount_input">Balance</label>
+                <input type="text" className="form-control" value={response.data[i].balance} disabled/>
+                <label htmlFor="amount_input">Deposit</label>
+                <input type="text" className="form-control" value={response.data[i].total_deposit} disabled/>
+                {closeBtn}
+                {payBtn}
+            </div>
+          </div>
+        )
+
+      }
+      //if(response.status != 200);
+      this.setState({channels: chs})
+      return response.data;
+    }catch(err){
+      console.log('Channels Error: ');
+      console.log(err);
+      // this.setState({channels: []});
     }
-    //if(response.status != 200);
-    this.setState({channels: chs})
-    return response.data;
   }
 
   checkRaiden = async () => {

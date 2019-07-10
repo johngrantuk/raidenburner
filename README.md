@@ -1,5 +1,7 @@
 Would like to pull out Raiden functions to a helper library.
 
+Better error handling.
+
 🔥👛 The [Burner Wallet](https://xdai.io) is a quick web wallet used to move small amounts of crypto quickly. On page load an Ethereum keypair is automatically generated and used to sign transactions with an incredibly simple interface. Sending funds is as easy as a QR code scan.
 
 💵 Burners are analogous to cash: quick and easy but less secure. You wouldn't stuff thousands of dollars in your pocket on the way out the door at night, don't trust a seed phrase in localstorage with more than you are willing to lose.
