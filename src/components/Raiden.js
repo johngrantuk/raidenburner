@@ -7,6 +7,7 @@ import RecentTransactions from './RecentTransactions';
 import { scroller } from 'react-scroll'
 import i18n from '../i18n';
 import axios from 'axios';
+const web3 = require('web3');
 
 const QRCode = require('qrcode.react');
 
@@ -19,7 +20,8 @@ export default class Raiden extends React.Component {
       channels: [],
       receiverAddress: '',
       depositAmount: 0,
-      nodeDetails: 'http://localhost:5001'
+      nodeDetails: 'http://localhost:5001',
+      raidenAddress: 'Click Check Raiden'
     }
   }
   componentDidMount(){
@@ -84,11 +86,35 @@ export default class Raiden extends React.Component {
   }
 
   checkRaiden = async () => {
-    console.log('Checking Raiden Setup')
+    console.log('Checking Raiden Setup');
+    try{
+      let response = await axios.get(this.state.nodeDetails + '/api/v1/address');
+
+      console.log('Raiden Address: ' + response.data.our_address);
+      this.setState({raidenAddress: response.data.our_address})
+
+      response = await axios.get(this.state.nodeDetails + '/api/v1/tokens');
+
+      let isToken = false;
+      for(var i = 0;i < response.data.length; i++){
+        if(web3.utils.toChecksumAddress(this.state.tokenAddress) == web3.utils.toChecksumAddress(response.data[i])){
+          isToken = true;
+          break;
+        }
+      }
+
+      if(isToken)
+        this.props.changeAlert({type: 'success', message: "The token is registered on Raiden"});
+      else
+        this.props.changeAlert({type: 'warning', message: "The token is NOT registered on Raiden"});
+    }catch(err){
+      this.props.changeAlert({type: 'danger', message: err.toString()});
+    }
   }
 
   openChannel = async () => {
-    console.log('Openning Channel')
+    console.log('Openning Channel');
+    this.props.changeAlert({type: 'success', message: "You're alerting!"});
   }
 
   render() {
@@ -132,26 +158,6 @@ export default class Raiden extends React.Component {
 
     return (
       <div>
-        <div className="send-to-address w-100">
-          <CopyToClipboard text={address} onCopy={() => {
-            changeAlert({type: 'success', message: i18n.t('receive.address_copied')})
-          }}>
-            <div className="content qr row" style={{cursor:"pointer"}}>
-
-              <div className="input-group">
-                <input type="text" className="form-control" style={{color:"#999999"}} value={address} disabled/>
-                <div className="input-group-append">
-                  <span className="input-group-text"><i style={{color:"#999999"}}  className="fas fa-copy"/></span>
-                </div>
-              </div>
-            </div>
-          </CopyToClipboard>
-          <div style={{width:"100%",textAlign:'center',padding:20}}>
-            <a href={"https://blockscout.com/poa/dai/address/"+address+"/transactions"} target="_blank">
-              View on Blockscout
-            </a>
-          </div>
-        </div>
 
         <div className="content row">
           <div className="form-group w-100">
@@ -161,6 +167,20 @@ export default class Raiden extends React.Component {
                 <input type="text" className="form-control" placeholder="http://localhost:5001"
                   value={this.state.nodeDetails}
                   onChange={event => this.setState({nodeDetails: event.target.value})}
+                />
+
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="content row">
+          <div className="form-group w-100">
+            <div className="form-group w-100">
+              <label htmlFor="amount_input">Node Address</label>
+              <div className="input-group">
+                <input type="text" className="form-control" placeholder="Click Check Raiden"
+                  value={this.state.raidenAddress} disabled
                 />
 
               </div>
@@ -183,8 +203,7 @@ export default class Raiden extends React.Component {
           </div>
         </div>
 
-        <button name="confirm" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary}
-                onClick={this.checkRaiden}>
+        <button name="confirm" className={`btn btn-lg w-100`} style={this.props.buttonStyle.primary} onClick={this.checkRaiden}>
           Check Raiden
         </button>
 
