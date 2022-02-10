@@ -27,7 +27,7 @@
     "helmet": "^3.14.0",
     "i18next": "^13.1.5",
     "i18next-browser-languagedetector": "^2.2.4",
-    "node-sass": "^4.11.0",
+    "node-sass": "^7.0.0",
     "path": "^0.12.7",
     "qrcode-reader": "^1.0.4",
     "qrcode.react": "^0.8.0",
